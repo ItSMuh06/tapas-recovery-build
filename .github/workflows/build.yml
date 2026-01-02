@@ -7,33 +7,37 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Sunucuyu Tamamen Temizle (Yer Aç)
+      - name: Sunucuyu Tamamen Temizle (Disk Alanı Aç)
         run: |
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/boost /usr/lib/jvm
-          # Derleme için yaklaşık 30GB+ alan açar
+          # Bu komut yaklaşık 30GB+ yer açar
 
       - name: Bağımlılıkları Kur
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc build-essential zip curl libc6-dev libncurses5-dev libssl-dev imagemagick python3 git-core
+          sudo apt-get install -y bc build-essential zip curl libc6-dev libncurses5-dev libssl-dev imagemagick python3 git-core wget
 
       - name: OrangeFox Kaynaklarını Hafif Çek
         run: |
           mkdir ~/fox
           cd ~/fox
-          # --depth 1 ile sadece son dosyaları çekiyoruz (Hızlı ve hafif)
+          # Depth 1 ile sadece en gerekli olanları alıyoruz
           git clone --depth 1 https://gitlab.com/OrangeFox/misc/scripts.git -b master
           cd scripts
           sudo bash setup/android_build_env.sh
 
-      - name: Tapas Cihaz Ağacını Ekle
+      - name: Tapas Cihaz Ağacını ZIP Olarak İndir (Username Hatası Çözümü)
         run: |
           cd ~/fox
-          rm -rf device/xiaomi/tapas
           mkdir -p device/xiaomi/tapas
-          # Kimlik doğrulama hatasını aşmak için URL formatını güncelledik
-          git clone --depth 1 http://github.com/Paimon-Lab/android_device_xiaomi_topaz -b fox_12.1 device/xiaomi/tapas
+          # Git clone yerine doğrudan ZIP indiriyoruz, böylece kullanıcı adı sormaz
+          wget https://github.com/Paimon-Lab/android_device_xiaomi_topaz/archive/refs/heads/fox_12.1.zip
+          unzip fox_12.1.zip
+          # Klasörün içindekileri doğru yere taşıyıp temizlik yapıyoruz
+          cp -r android_device_xiaomi_topaz-fox_12.1/* device/xiaomi/tapas/
+          rm -rf fox_12.1.zip android_device_xiaomi_topaz-fox_12.1
 
-      - name: Derleme Hazırlığı Tamam
+      - name: Hazırlık Başarılı
         run: |
-          echo "Cihaz ağacı ve ortam başarıyla kuruldu. Bir sonraki adımda derleme komutunu verebiliriz."
+          echo "Cihaz ağacı (tapas) başarıyla kuruldu. Artık derleme aşamasına hazırız!"
+          ls -R ~/fox/device/xiaomi/tapas

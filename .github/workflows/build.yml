@@ -1,0 +1,21 @@
+name: Tapas Recovery Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Alan Temizliği ve Bağımlılıklar
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bc build-essential zip curl libc6-dev libncurses5-dev libssl-dev testdisk
+
+      - name: Derleme Ortamını Kur
+        run: |
+          echo "Burada tapas cihazı için senkronizasyon başlayacak..."
+          # İlk aşamada sadece bağlantıyı test ediyoruz

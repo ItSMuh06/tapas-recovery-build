@@ -10,7 +10,7 @@ jobs:
       - name: Alan Temizliği ve Bağımlılıklar
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc build-essential zip curl libc6-dev libncurses5-dev libssl-dev libxml2-utils git-core gnupg flex bison gperf image-magick liblz4-tool zlib1g-dev python3
+          sudo apt-get install -y bc build-essential zip curl libc6-dev libncurses5-dev libssl-dev libxml2-utils git-core gnupg flex bison gperf imagemagick liblz4-tool zlib1g-dev python-is-python3
 
       - name: OrangeFox Senkronizasyonu
         run: |

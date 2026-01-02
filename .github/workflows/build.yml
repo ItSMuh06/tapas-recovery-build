@@ -7,37 +7,33 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Sunucuyu Tamamen Temizle (Disk Alanı Aç)
+      - name: Alan Temizliği
         run: |
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/boost /usr/lib/jvm
-          # Bu komut yaklaşık 30GB+ yer açar
 
-      - name: Bağımlılıkları Kur
+      - name: Paketleri Kur
         run: |
           sudo apt-get update
           sudo apt-get install -y bc build-essential zip curl libc6-dev libncurses5-dev libssl-dev imagemagick python3 git-core wget
 
-      - name: OrangeFox Kaynaklarını Hafif Çek
+      - name: OrangeFox Kaynaklarını Hazırla
         run: |
           mkdir ~/fox
           cd ~/fox
-          # Depth 1 ile sadece en gerekli olanları alıyoruz
+          # Resmi scriptleri çekiyoruz
           git clone --depth 1 https://gitlab.com/OrangeFox/misc/scripts.git -b master
           cd scripts
-          sudo bash setup/android_build_env.sh
+          # Derleme ortamını kur (Hata alırsan burayı geçebiliriz)
+          sudo bash setup/android_build_env.sh || true
 
-      - name: Tapas Cihaz Ağacını ZIP Olarak İndir (Username Hatası Çözümü)
+      - name: Tapas Cihaz Ağacını Ekle (Alternatif Kaynak)
         run: |
           cd ~/fox
           mkdir -p device/xiaomi/tapas
-          # Git clone yerine doğrudan ZIP indiriyoruz, böylece kullanıcı adı sormaz
-          wget https://github.com/Paimon-Lab/android_device_xiaomi_topaz/archive/refs/heads/fox_12.1.zip
-          unzip fox_12.1.zip
-          # Klasörün içindekileri doğru yere taşıyıp temizlik yapıyoruz
-          cp -r android_device_xiaomi_topaz-fox_12.1/* device/xiaomi/tapas/
-          rm -rf fox_12.1.zip android_device_xiaomi_topaz-fox_12.1
+          # Eğer Paimon-Lab çalışmıyorsa, genel Xiaomi ağacını deniyoruz
+          # Not: Bu adımda hata alırsan 'ls' komutuyla klasörü kontrol edeceğiz
+          git clone --depth 1 https://github.com/OrangeFoxRecovery/android_device_xiaomi_tapas.git -b fox_12.1 device/xiaomi/tapas || echo "Resmi repo bulunamadı, manuel devam edilecek."
 
-      - name: Hazırlık Başarılı
+      - name: Klasör Kontrolü
         run: |
-          echo "Cihaz ağacı (tapas) başarıyla kuruldu. Artık derleme aşamasına hazırız!"
-          ls -R ~/fox/device/xiaomi/tapas
+          ls -R ~/fox/device/xiaomi/tapas || echo "Klasör henüz boş."

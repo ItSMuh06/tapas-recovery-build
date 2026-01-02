@@ -26,13 +26,15 @@ jobs:
           cd scripts
           # Android derleme ortamını hazırlar
           sudo bash setup/android_build_env.sh
-
-      - name: Tapas Cihaz Ağacını Ekle
+          
+- name: Tapas Cihaz Ağacını Ekle
         run: |
           cd ~/fox
-          # Hata almamak için klasörü oluşturup resmi reposundan cihaz ağacını çekiyoruz
+          # Klasörü temizleyip yeniden oluşturuyoruz
+          rm -rf device/xiaomi/tapas
           mkdir -p device/xiaomi/tapas
-          git clone --depth 1 https://github.com/Paimon-Lab/android_device_xiaomi_topaz.git -b fox_12.1 device/xiaomi/tapas
+          # URL'yi daha geniş bir izinle ve farklı bir formatla deniyoruz
+          git clone --depth 1 http://github.com/Paimon-Lab/android_device_xiaomi_topaz -b fox_12.1 device/xiaomi/tapas
 
       - name: Derlemeyi Başlat
         run: |

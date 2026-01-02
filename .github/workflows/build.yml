@@ -1,21 +1,32 @@
-name: Tapas Recovery Build
+name: OrangeFox Recovery Build (tapas)
 
 on:
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Alan Temizliği ve Bağımlılıklar
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc build-essential zip curl libc6-dev libncurses5-dev libssl-dev testdisk
+          sudo apt-get install -y bc build-essential zip curl libc6-dev libncurses5-dev libssl-dev libxml2-utils git-core gnupg flex bison gperf image-magick liblz4-tool zlib1g-dev python3
 
-      - name: Derleme Ortamını Kur
+      - name: OrangeFox Senkronizasyonu
         run: |
-          echo "Burada tapas cihazı için senkronizasyon başlayacak..."
-          # İlk aşamada sadece bağlantıyı test ediyoruz
+          mkdir ~/fox
+          cd ~/fox
+          git clone https://gitlab.com/OrangeFox/misc/scripts.git -b master
+          cd scripts
+          sudo bash setup/android_build_env.sh
+          sudo bash setup/install_android_sdk.sh
+
+      - name: Tapas Cihaz Ağacını Çek
+        run: |
+          cd ~/fox
+          git clone https://github.com/Paimon-Lab/android_device_xiaomi_topaz -b fox_12.1 device/xiaomi/tapas
+
+      - name: Derlemeyi Başlat
+        run: |
+          cd ~/fox
+          # Buraya derleme komutları gelecek (Bu işlem yaklaşık 30-45 dk sürer)

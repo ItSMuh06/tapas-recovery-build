@@ -7,23 +7,22 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: GitHub Sunucusunda Yer Aç
+      - name: Yer Aç ve Hazırlan
         run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-          # Bu komutlar bize yaklaşık 20-25 GB ekstra alan sağlar
-
-      - name: Bağımlılıkları Kur
-        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
           sudo apt-get update
-          sudo apt-get install -y bc build-essential zip curl libc6-dev libncurses5-dev libssl-dev imagemagick python3
+          sudo apt-get install -y bc build-essential zip curl libc6-dev libncurses5-dev libssl-dev imagemagick python3 git-core
 
-      - name: OrangeFox Senkronizasyonu
+      - name: OrangeFox Kaynak Kodlarını Çek
         run: |
           mkdir ~/fox
           cd ~/fox
           git clone https://gitlab.com/OrangeFox/misc/scripts.git -b master
           cd scripts
-          # Tüm repo yerine sadece gerekli olanı çekmek için derinliği sınırla
-          git config --global core.compression 9
+          # Burası uzun sürecek, sadece gerekli olanları çekiyoruz
+          sudo bash setup/android_build_env.sh
+
+      - name: Tapas Cihaz Ağacını Ekle
+        run: |
+          cd ~/fox
+          git clone https://github.com/Paimon-Lab/android_device_xiaomi_topaz -b fox_12.1 device/xiaomi/tapas

@@ -7,33 +7,36 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Alan Temizliği
+      - name: Alan Temizliği ve Hazırlık
         run: |
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/boost /usr/lib/jvm
-
-      - name: Paketleri Kur
-        run: |
           sudo apt-get update
           sudo apt-get install -y bc build-essential zip curl libc6-dev libncurses5-dev libssl-dev imagemagick python3 git-core wget
 
-      - name: OrangeFox Kaynaklarını Hazırla
+      - name: Kaynakları ve Cihaz Ağacını Hazırla
         run: |
           mkdir ~/fox
           cd ~/fox
-          # Resmi scriptleri çekiyoruz
           git clone --depth 1 https://gitlab.com/OrangeFox/misc/scripts.git -b master
           cd scripts
-          # Derleme ortamını kur (Hata alırsan burayı geçebiliriz)
           sudo bash setup/android_build_env.sh || true
+          cd ..
+          mkdir -p device/xiaomi/tapas
+          # Bir önceki adımda yeşil alan başarılı yöntemimizi buraya sabitliyoruz
+          git clone --depth 1 https://github.com/OrangeFoxRecovery/android_device_xiaomi_tapas.git -b fox_12.1 device/xiaomi/tapas || echo "Dosyalar zaten var."
 
-      - name: Tapas Cihaz Ağacını Ekle (Alternatif Kaynak)
+      - name: ORANGEFOX DERLEMESİNİ BAŞLAT (Final)
         run: |
           cd ~/fox
-          mkdir -p device/xiaomi/tapas
-          # Eğer Paimon-Lab çalışmıyorsa, genel Xiaomi ağacını deniyoruz
-          # Not: Bu adımda hata alırsan 'ls' komutuyla klasörü kontrol edeceğiz
-          git clone --depth 1 https://github.com/OrangeFoxRecovery/android_device_xiaomi_tapas.git -b fox_12.1 device/xiaomi/tapas || echo "Resmi repo bulunamadı, manuel devam edilecek."
+          # Çevresel değişkenleri yükle
+          source build/envsetup.sh
+          # Cihazı seç (tapas)
+          lunch omni_tapas-eng || lunch fox_tapas-eng
+          # Derlemeyi başlat (Bu adım 30-60 dk sürebilir)
+          mka recoveryimage -j$(nproc)
 
-      - name: Klasör Kontrolü
-        run: |
-          ls -R ~/fox/device/xiaomi/tapas || echo "Klasör henüz boş."
+      - name: Sonucu Dışarı Aktar (Artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: OrangeFox-Tapas-Recovery
+          path: ~/fox/out/target/product/tapas/*.img

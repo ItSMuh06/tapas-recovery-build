@@ -7,22 +7,36 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Yer Aç ve Hazırlan
+      - name: Sunucuyu Tamamen Temizle (Yer Aç)
         run: |
-          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/boost /usr/lib/jvm
+          # Bu komut yaklaşık 30GB+ yer açarak derleme için alan sağlar
+
+      - name: Bağımlılıkları Kur
+        run: |
           sudo apt-get update
           sudo apt-get install -y bc build-essential zip curl libc6-dev libncurses5-dev libssl-dev imagemagick python3 git-core
 
-      - name: OrangeFox Kaynak Kodlarını Çek
+      - name: OrangeFox Kaynaklarını Hafif Çek
         run: |
           mkdir ~/fox
           cd ~/fox
-          git clone https://gitlab.com/OrangeFox/misc/scripts.git -b master
+          # Sadece son commit'i çekerek zamandan ve diskten tasarruf ediyoruz
+          git clone --depth 1 https://gitlab.com/OrangeFox/misc/scripts.git -b master
           cd scripts
-          # Burası uzun sürecek, sadece gerekli olanları çekiyoruz
+          # Android derleme ortamını hazırlar
           sudo bash setup/android_build_env.sh
 
       - name: Tapas Cihaz Ağacını Ekle
         run: |
           cd ~/fox
-          git clone https://github.com/Paimon-Lab/android_device_xiaomi_topaz -b fox_12.1 device/xiaomi/tapas
+          # Hata almamak için klasörü oluşturup resmi reposundan cihaz ağacını çekiyoruz
+          mkdir -p device/xiaomi/tapas
+          git clone --depth 1 https://github.com/Paimon-Lab/android_device_xiaomi_topaz.git -b fox_12.1 device/xiaomi/tapas
+
+      - name: Derlemeyi Başlat
+        run: |
+          cd ~/fox
+          # Bu aşamada OrangeFox senin cihazın için derlenmeye başlar
+          # Not: Eğer buraya kadar hatasız gelirse, bir sonraki adımda sana asıl 'make' komutunu vereceğim
+          echo "Cihaz ağacı hazır, derleme ortamı kuruldu."

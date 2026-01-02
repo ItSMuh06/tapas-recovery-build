@@ -17,7 +17,7 @@ jobs:
       - name: Bağımlılıkları Kur
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc build-essential zip curl libc6-dev libncurses5-dev libssl-dev imagemagick python3-is-python3
+          sudo apt-get install -y bc build-essential zip curl libc6-dev libncurses5-dev libssl-dev imagemagick python3
 
       - name: OrangeFox Senkronizasyonu
         run: |

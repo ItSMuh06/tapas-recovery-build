@@ -7,36 +7,36 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Alan Temizliği ve Hazırlık
+      - name: Alan Aç ve Bağımlılıkları Kur
         run: |
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/boost /usr/lib/jvm
           sudo apt-get update
-          sudo apt-get install -y bc build-essential zip curl libc6-dev libncurses5-dev libssl-dev imagemagick python3 git-core wget
+          sudo apt-get install -y bc build-essential zip curl libc6-dev libncurses5-dev libssl-dev imagemagick python3 git-core wget repo
 
-      - name: Kaynakları ve Cihaz Ağacını Hazırla
+      - name: OrangeFox Kaynaklarını Minimal Senkronize Et
         run: |
           mkdir ~/fox
           cd ~/fox
-          git clone --depth 1 https://gitlab.com/OrangeFox/misc/scripts.git -b master
-          cd scripts
-          sudo bash setup/android_build_env.sh || true
-          cd ..
-          mkdir -p device/xiaomi/tapas
-          # Bir önceki adımda yeşil alan başarılı yöntemimizi buraya sabitliyoruz
-          git clone --depth 1 https://github.com/OrangeFoxRecovery/android_device_xiaomi_tapas.git -b fox_12.1 device/xiaomi/tapas || echo "Dosyalar zaten var."
+          # OrangeFox'un resmi manifestosunu kullanarak sadece gerekli dosyaları çekiyoruz
+          repo init --depth=1 -u https://gitlab.com/OrangeFox/Manifest.git -b fox_12.1
+          repo sync -j$(nproc) --force-sync --no-clone-bundle --no-tags
 
-      - name: ORANGEFOX DERLEMESİNİ BAŞLAT (Final)
+      - name: Tapas Cihaz Ağacını Ekle
         run: |
           cd ~/fox
-          # Çevresel değişkenleri yükle
+          git clone --depth 1 https://github.com/OrangeFoxRecovery/android_device_xiaomi_tapas.git -b fox_12.1 device/xiaomi/tapas
+
+      - name: Derlemeyi Başlat
+        run: |
+          cd ~/fox
+          set -e
           source build/envsetup.sh
-          # Cihazı seç (tapas)
-          lunch omni_tapas-eng || lunch fox_tapas-eng
-          # Derlemeyi başlat (Bu adım 30-60 dk sürebilir)
+          export ALLOW_MISSING_DEPENDENCIES=true
+          lunch twins_tapas-eng || lunch fox_tapas-eng
           mka recoveryimage -j$(nproc)
 
-      - name: Sonucu Dışarı Aktar (Artifact)
+      - name: Dosyayı Paylaş
         uses: actions/upload-artifact@v4
         with:
-          name: OrangeFox-Tapas-Recovery
+          name: OrangeFox-Tapas
           path: ~/fox/out/target/product/tapas/*.img

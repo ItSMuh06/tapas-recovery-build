@@ -5,12 +5,19 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
-      - name: Alan Temizliği ve Bağımlılıklar
+      - name: GitHub Sunucusunda Yer Aç
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          # Bu komutlar bize yaklaşık 20-25 GB ekstra alan sağlar
+
+      - name: Bağımlılıkları Kur
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc build-essential zip curl libc6-dev libncurses5-dev libssl-dev libxml2-utils git-core gnupg flex bison gperf imagemagick liblz4-tool zlib1g-dev python-is-python3
+          sudo apt-get install -y bc build-essential zip curl libc6-dev libncurses5-dev libssl-dev imagemagick python3-is-python3
 
       - name: OrangeFox Senkronizasyonu
         run: |
@@ -18,15 +25,5 @@ jobs:
           cd ~/fox
           git clone https://gitlab.com/OrangeFox/misc/scripts.git -b master
           cd scripts
-          sudo bash setup/android_build_env.sh
-          sudo bash setup/install_android_sdk.sh
-
-      - name: Tapas Cihaz Ağacını Çek
-        run: |
-          cd ~/fox
-          git clone https://github.com/Paimon-Lab/android_device_xiaomi_topaz -b fox_12.1 device/xiaomi/tapas
-
-      - name: Derlemeyi Başlat
-        run: |
-          cd ~/fox
-          # Buraya derleme komutları gelecek (Bu işlem yaklaşık 30-45 dk sürer)
+          # Tüm repo yerine sadece gerekli olanı çekmek için derinliği sınırla
+          git config --global core.compression 9
